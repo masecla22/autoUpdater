@@ -28,6 +28,21 @@ GUISetState(@SW_SHOW)
 #comments-start
 StringRegExpReplace($test,"<[^<]*>","")
 #comments-end
+Func _GetNetworkConnect()
+    Local Const $NETWORK_ALIVE_LAN = 0x1  ;net card connection
+    Local Const $NETWORK_ALIVE_WAN = 0x2  ;RAS (internet) connection
+    Local Const $NETWORK_ALIVE_AOL = 0x4  ;AOL
+
+    Local $aRet, $iResult
+
+    $aRet = DllCall("sensapi.dll", "int", "IsNetworkAlive", "int*", 0)
+
+    If BitAND($aRet[1], $NETWORK_ALIVE_LAN) Then $iResult &= "LAN connected" & @LF
+    If BitAND($aRet[1], $NETWORK_ALIVE_WAN) Then $iResult &= "WAN connected" & @LF
+    If BitAND($aRet[1], $NETWORK_ALIVE_AOL) Then $iResult &= "AOL connected" & @LF
+
+    Return $iResult
+EndFunc
 func download($url,$file,$onOrOff)
 local $string=_INetGetSource($url)
 
@@ -58,6 +73,9 @@ if($onOrOff==4) Then
    EndIf
 EndIf
    EndFunc
+$connect = _GetNetworkConnect()
+$connect=1
+If $connect Then
 While 1
 	$nMsg = GUIGetMsg()
 	Switch $nMsg
@@ -97,4 +115,8 @@ While 1
 			EndIf
 
 	EndSwitch
-WEnd
+ WEnd
+ Else
+	GUISetState(@SW_HIDE)
+    MsgBox(48, "Warning", "No Internet Connection Detected!")
+EndIf
